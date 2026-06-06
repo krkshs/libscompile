@@ -14,7 +14,7 @@ npm install
 ### build
 
 ```bash
-node libscompile.js script.js
+node beta/cli.js script.js
 ```
 outputs `script.obf.js` and a session key.
 
