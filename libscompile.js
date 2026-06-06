@@ -48,7 +48,7 @@ function bfridobf(tpath) {
     const ehex = encdata(dbuf, okey);
     
     //frida injector stub
-    const scode = `// by obf @libmeta
+    const scode = `// by obf @krkshs
 // libscompile 0.1.2 (jake)
 !function(){
   var k=typeof libskey!=='undefined'?libskey:'',h="${ehex}",s=[];

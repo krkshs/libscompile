@@ -49,4 +49,4 @@ script.load()
 ```
 
 ## 📜 License
-MIT License. Created by @libmeta.
+MIT License. Created by @krkshs.
