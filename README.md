@@ -1,6 +1,6 @@
 # libscompile
 
-compiler and obfuscator for frida scripts (v12-17). 
+compiler and obfuscator for frida scripts (v13-17). 
 packs js into ast-obfuscated byte arrays with rc4 encryption and magic signature checks.
 
 ### install
