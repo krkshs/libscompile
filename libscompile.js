@@ -49,7 +49,7 @@ function bfridobf(tpath) {
     
     //frida injector stub
     const scode = `// by obf @libmeta
-// libscompile 0.1.1 (pancake)
+// libscompile 0.1.2 (jake)
 !function(){
   var k=typeof libskey!=='undefined'?libskey:'',h="${ehex}",s=[];
   for(var i=0;i<256;i++)s[i]=i;
@@ -58,18 +58,15 @@ function bfridobf(tpath) {
     j=(j+s[i]+k.charCodeAt(i%k.length))%256;
     t=s[i];s[i]=s[j];s[j]=t;
   }
-  var out=[],i=0;j=0;
+  var raw='',i=0,b=0;j=0;
   for(var y=0;y<h.length;y+=2){
     i=(i+1)%256;
     j=(j+s[i])%256;
     t=s[i];s[i]=s[j];s[j]=t;
-    out.push(parseInt(h.substr(y,2),16)^s[(s[i]+s[j])%256]);
+    b=parseInt(h.substr(y,2),16)^s[(s[i]+s[j])%256];
+    raw+='%'+(b<16?'0':'')+b.toString(16);
   }
-  var raw='';
-  for(var i=0;i<out.length;i+=10000){
-    raw+=String.fromCharCode.apply(null,out.slice(i,i+10000));
-  }
-  eval(decodeURIComponent(escape(raw)));
+  eval(decodeURIComponent(raw));
 }();`;
     
     //flush to disk
