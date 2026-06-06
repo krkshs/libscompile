@@ -35,10 +35,10 @@ session.create_script(payload).load()
 ```
 
 ### internals
-- **Orbus Compilation System**: custom VM-like execution runtime (introduced in 0.1.3.3)
-- **fridahash**: SHA256 integrity check of the original payload to prevent tampering
-- **byahash**: execution control hash derived from the session key
-- rc4 payload encryption
+- **Orbus Compilation System**: Modular VM-like execution runtime (introduced in 0.1.3.4)
+- **fridahash**: SHA256 of the original payload
+- **byahash**: SHA256 derived from the session key
+- **True Hash-Based Encryption**: The RC4 decryption key is dynamically assembled at runtime using the `fridahash`, `byahash`, and a specific Telegram URL salt. Modifying any of these values mathematically breaks the decryption.
 - magic signature verification (`LIBSMETA_OK`)
 - byte array compilation format
 
