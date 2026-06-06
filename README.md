@@ -40,6 +40,7 @@ session.create_script(payload).load()
 - silent abort on decryption failure
 - ast obfuscation (control flow flattening, string splitting)
 - byte array compilation format
+- **NEW**: simple anti-debug loop (`debugger;` interval) in 0.1.3.2
 
 ---
 @krkshs

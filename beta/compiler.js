@@ -6,6 +6,10 @@ function rv() {
   return '_0x' + crypto.randomBytes(2).toString('hex');
 }
 
+function antidebug() {
+  return '\nsetInterval(function(){debugger;},100);';
+}
+
 function neiroslop() {
   return '\n//PMDRK YA NEIROSLOPER!!!';
 }
@@ -32,7 +36,7 @@ function bfridobf(tpath) {
 
     //custom native obfuscated stub
     const scode = `// by obf @krkshs
-// libscompile 0.1.3.1 (cake beta)
+// libscompile 0.1.3.2 (cake beta)
 !function(){
   var ${vk}=String.fromCharCode(${karr}),
       ${vp}=[${eArr.join(',')}],
@@ -52,7 +56,7 @@ function bfridobf(tpath) {
     ${vraw}+='%'+(${vb}<16?'0':'')+${vb}.toString(16);
   }
   var ${vdec}=decodeURIComponent(${vraw});
-  if(${vdec}.substring(0,11)!=="LIBSMETA_OK")return;
+  if(${vdec}.substring(0,11)!=="LIBSMETA_OK")return;${antidebug()}
   eval(${vdec}.substring(11));
 }();${neiroslop()}`;
 
