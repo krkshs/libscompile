@@ -35,12 +35,12 @@ session.create_script(payload).load()
 ```
 
 ### internals
+- **Orbus Compilation System**: custom VM-like execution runtime (introduced in 0.1.3.3)
+- **fridahash**: SHA256 integrity check of the original payload to prevent tampering
+- **byahash**: execution control hash derived from the session key
 - rc4 payload encryption
 - magic signature verification (`LIBSMETA_OK`)
-- silent abort on decryption failure
-- ast obfuscation (control flow flattening, string splitting)
 - byte array compilation format
-- **NEW**: simple anti-debug loop (`debugger;` interval) in 0.1.3.2
 
 ---
 @krkshs
