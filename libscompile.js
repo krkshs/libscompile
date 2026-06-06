@@ -1,5 +1,6 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const JavaScriptObfuscator = require('javascript-obfuscator');
 
 //core rc4 cipher stream
 function gstream(khex, olen) {
@@ -50,9 +51,7 @@ function bfridobf(tpath) {
     const karr = Array.from(okey).map(c => c.charCodeAt(0)).join(',');
 
     //frida injector stub
-    const scode = `// by obf @krkshs
-// libscompile 0.1.3 (cake beta)
-!function(){
+    const scode = `!function(){
   var k=String.fromCharCode(${karr}),p=[${eArr.join(',')}],s=[];
   for(var i=0;i<256;i++)s[i]=i;
   var j=0,t;
@@ -72,10 +71,23 @@ function bfridobf(tpath) {
   if(dec.substring(0,11)!=="LIBSMETA_OK")return;
   eval(dec.substring(11));
 }();`;
-    
+
+    const obfuscatedStub = JavaScriptObfuscator.obfuscate(scode, {
+        compact: true,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 1,
+        numbersToExpressions: true,
+        simplify: true,
+        stringArrayShuffle: true,
+        splitStrings: true,
+        stringArrayThreshold: 1
+    }).getObfuscatedCode();
+
+    const finalCode = `// by obf @krkshs\n// libscompile 0.1.3 (cake beta)\n${obfuscatedStub}`;
+
     //flush to disk
     const dpath = tpath.replace(/\.js$/, '') + '.obf.js';
-    fs.writeFileSync(dpath, scode);
+    fs.writeFileSync(dpath, finalCode);
     
     console.log('[*] build success');
     console.log(`[*] session key: ${okey}`);
