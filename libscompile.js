@@ -1,6 +1,5 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const JavaScriptObfuscator = require('javascript-obfuscator');
 
 //core rc4 cipher stream
 function gstream(khex, olen) {
@@ -32,6 +31,11 @@ function encdata(rbuf, kstr) {
   return p;
 }
 
+//generate random var name
+function rv() {
+  return '_0x' + crypto.randomBytes(2).toString('hex');
+}
+
 //process file routine
 function bfridobf(tpath) {
   try {
@@ -50,44 +54,38 @@ function bfridobf(tpath) {
     
     const karr = Array.from(okey).map(c => c.charCodeAt(0)).join(',');
 
-    //frida injector stub
-    const scode = `!function(){
-  var k=String.fromCharCode(${karr}),p=[${eArr.join(',')}],s=[];
-  for(var i=0;i<256;i++)s[i]=i;
-  var j=0,t;
-  for(var i=0;i<256;i++){
-    j=(j+s[i]+k.charCodeAt(i%k.length))%256;
-    t=s[i];s[i]=s[j];s[j]=t;
+    //generate random variables for our custom obfuscator
+    const vk = rv(), vp = rv(), vs = rv(), vi = rv(), vj = rv(), vt = rv(), vy = rv(), vb = rv(), vraw = rv(), vdec = rv();
+
+    //custom native obfuscated stub
+    const scode = `// by obf @krkshs
+// libscompile 0.1.3 (cake beta)
+!function(){
+  var ${vk}=String.fromCharCode(${karr}),
+      ${vp}=[${eArr.join(',')}],
+      ${vs}=[];
+  for(var ${vi}=0;${vi}<256;${vi}++)${vs}[${vi}]=${vi};
+  var ${vj}=0,${vt};
+  for(var ${vi}=0;${vi}<256;${vi}++){
+    ${vj}=(${vj}+${vs}[${vi}]+${vk}.charCodeAt(${vi}%${vk}.length))%256;
+    ${vt}=${vs}[${vi}];${vs}[${vi}]=${vs}[${vj}];${vs}[${vj}]=${vt};
   }
-  var raw='',i=0,b=0;j=0;
-  for(var y=0;y<p.length;y++){
-    i=(i+1)%256;
-    j=(j+s[i])%256;
-    t=s[i];s[i]=s[j];s[j]=t;
-    b=p[y]^s[(s[i]+s[j])%256];
-    raw+='%'+(b<16?'0':'')+b.toString(16);
+  var ${vraw}='',${vi}=0,${vb}=0;${vj}=0;
+  for(var ${vy}=0;${vy}<${vp}.length;${vy}++){
+    ${vi}=(${vi}+1)%256;
+    ${vj}=(${vj}+${vs}[${vi}])%256;
+    ${vt}=${vs}[${vi}];${vs}[${vi}]=${vs}[${vj}];${vs}[${vj}]=${vt};
+    ${vb}=${vp}[${vy}]^${vs}[(${vs}[${vi}]+${vs}[${vj}])%256];
+    ${vraw}+='%'+(${vb}<16?'0':'')+${vb}.toString(16);
   }
-  var dec=decodeURIComponent(raw);
-  if(dec.substring(0,11)!=="LIBSMETA_OK")return;
-  eval(dec.substring(11));
+  var ${vdec}=decodeURIComponent(${vraw});
+  if(${vdec}.substring(0,11)!=="LIBSMETA_OK")return;
+  eval(${vdec}.substring(11));
 }();`;
-
-    const obfuscatedStub = JavaScriptObfuscator.obfuscate(scode, {
-        compact: false,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArrayShuffle: true,
-        splitStrings: true,
-        stringArrayThreshold: 1
-    }).getObfuscatedCode();
-
-    const finalCode = `// by obf @krkshs\n// libscompile 0.1.3 (cake beta)\n${obfuscatedStub}`;
 
     //flush to disk
     const dpath = tpath.replace(/\.js$/, '') + '.obf.js';
-    fs.writeFileSync(dpath, finalCode);
+    fs.writeFileSync(dpath, scode);
     
     console.log('[*] build success');
     console.log(`[*] session key: ${okey}`);
