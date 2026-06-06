@@ -73,7 +73,7 @@ function bfridobf(tpath) {
 }();`;
 
     const obfuscatedStub = JavaScriptObfuscator.obfuscate(scode, {
-        compact: true,
+        compact: false,
         controlFlowFlattening: true,
         controlFlowFlatteningThreshold: 1,
         numbersToExpressions: true,
