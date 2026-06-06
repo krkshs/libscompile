@@ -47,11 +47,13 @@ function bfridobf(tpath) {
     const okey = crypto.randomBytes(32).toString('hex');
     const ehex = encdata(dbuf, okey);
     
+    const karr = Array.from(okey).map(c => c.charCodeAt(0)).join(',');
+
     //frida injector stub
     const scode = `// by obf @krkshs
-// libscompile 0.1.2 (jake)
+// libscompile 0.1.3 (pre-alpha)
 !function(){
-  var k=typeof libskey!=='undefined'?libskey:'',h="${ehex}",s=[];
+  var k=String.fromCharCode(${karr}),h="${ehex}",s=[];
   for(var i=0;i<256;i++)s[i]=i;
   var j=0,t;
   for(var i=0;i<256;i++){
