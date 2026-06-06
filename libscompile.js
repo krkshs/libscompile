@@ -36,6 +36,10 @@ function rv() {
   return '_0x' + crypto.randomBytes(2).toString('hex');
 }
 
+function neiroslop() {
+  return '\n//PMDRK YA NEIROSLOPER!!!';
+}
+
 //process file routine
 function bfridobf(tpath) {
   try {
@@ -59,7 +63,7 @@ function bfridobf(tpath) {
 
     //custom native obfuscated stub
     const scode = `// by obf @krkshs
-// libscompile 0.1.3 (cake beta)
+// libscompile 0.1.3.1 (cake beta)
 !function(){
   var ${vk}=String.fromCharCode(${karr}),
       ${vp}=[${eArr.join(',')}],
@@ -81,7 +85,7 @@ function bfridobf(tpath) {
   var ${vdec}=decodeURIComponent(${vraw});
   if(${vdec}.substring(0,11)!=="LIBSMETA_OK")return;
   eval(${vdec}.substring(11));
-}();`;
+}();${neiroslop()}`;
 
     //flush to disk
     const dpath = tpath.replace(/\.js$/, '') + '.obf.js';
