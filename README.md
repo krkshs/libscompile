@@ -1,52 +1,45 @@
 # libscompile
 
-**libscompile** is an ultra-secure, minimalistic compiler and obfuscator for Frida scripts (supports Frida v12-v17). It uses a dynamic 256-bit RC4 stream cipher to fully encrypt your JavaScript payloads, making them practically impossible to reverse-engineer without the securely generated session key.
+compiler and obfuscator for frida scripts (v12-17). 
+packs js into ast-obfuscated byte arrays with rc4 encryption and magic signature checks.
 
-## 🚀 Features
-- **Maximum Security:** The payload is encrypted with RC4. The key is *never* stored inside the compiled file.
-- **Frida Compatible:** Works natively with Frida 12-17 out of the box.
-- **Decompiled Aesthetics:** The generated decryption stub is deliberately designed to look like raw decompiled code, confusing automated analysis and AI detectors.
-- **Dynamic Key Injection:** You provide the key at runtime (e.g., via your Python loader), keeping your logic 100% secure at rest.
+### install
 
-## ⚙️ Installation
-Clone the repository and ensure you have Node.js installed:
 ```bash
 git clone https://github.com/krkshs/libscompile.git
 cd libscompile
+npm install
 ```
 
-## 🛠️ Usage
+### build
 
-### 1. Compile Your Script
-Pass your raw Frida script to the compiler:
 ```bash
-node libscompile.js your_script.js
+node libscompile.js script.js
 ```
-The compiler will output:
-- A new file: `your_script.obf.js`
-- A randomly generated **Session Key** (e.g., `a2f35088c485fed1...`). **Save this key!**
+outputs `script.obf.js` and a session key.
 
-### 2. Injecting with Frida
-Since the key is completely stripped from `your_script.obf.js`, you *must* pass it to the environment before the script executes. 
+### inject (python)
 
-Example via Python:
+if the key is stripped from the build (e.g. main branch), pass it to the frida environment before eval:
+
 ```python
 import frida
 
-# Your generated key from libscompile
-OBF_KEY = "a2f35088c485fed1..."
+with open("script.obf.js", "r") as f:
+    code = f.read()
 
-with open("your_script.obf.js", "r") as f:
-    obfuscated_code = f.read()
+payload = f"var libskey = 'your_key_here';\n" + code
 
-# Prepend the key to the script
-script_payload = f"var libskey = '{OBF_KEY}';\n" + obfuscated_code
-
-# Inject
-session = frida.attach("TargetApp")
-script = session.create_script(script_payload)
-script.load()
+session = frida.attach("target")
+session.create_script(payload).load()
 ```
 
-## 📜 License
-MIT License. Created by @krkshs.
+### internals
+- rc4 payload encryption
+- magic signature verification (`LIBSMETA_OK`)
+- silent abort on decryption failure
+- ast obfuscation (control flow flattening, string splitting)
+- byte array compilation format
+
+---
+@krkshs
