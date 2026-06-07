@@ -35,10 +35,14 @@ session.create_script(payload).load()
 ```
 
 ### internals
-- rc4 payload encryption
+- **AST Obfuscation**: Native code transformation (introduced in 0.1.3(2))
+- `javascript-obfuscator` backend
+- Variables, strings, and control flow dynamically encrypted
+- **fridahash**: SHA256 of the original script
+- **byahash**: SHA256 derived from the session key
+- The obfuscation `seed` is cryptographically tied to the session key
 - magic signature verification (`LIBSMETA_OK`)
 - silent abort on decryption failure
-- ast obfuscation (control flow flattening, string splitting)
 - byte array compilation format
 
 ---

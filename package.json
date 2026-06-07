@@ -1,0 +1,24 @@
+{
+  "name": "libscompile",
+  "version": "1.0.0",
+  "description": "compiler and obfuscator for frida scripts (v13-17). \r packs js into ast-obfuscated byte arrays with rc4 encryption and magic signature checks.",
+  "main": "libscompile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krkshs/libscompile.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/krkshs/libscompile/issues"
+  },
+  "homepage": "https://github.com/krkshs/libscompile#readme",
+  "dependencies": {
+    "javascript-obfuscator": "^5.4.3"
+  }
+}

@@ -1,8 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const { encdata } = require('./crypto.js');
+const JavaScriptObfuscator = require('javascript-obfuscator');
 const { fhash, bhash } = require('./hash.js');
-const { generateOrbusStub, dkey } = require('./orbus.js');
 
 function bfridobf(tpath) {
   try {
@@ -10,23 +9,42 @@ function bfridobf(tpath) {
       throw new Error(`cannot find script: ${tpath}`);
     }
     
-    const magic = Buffer.from('LIBSMETA_OK', 'utf8');
     const stext = fs.readFileSync(tpath, 'utf8');
-    const dbuf = Buffer.concat([magic, Buffer.from(stext, 'utf8')]);
     
     const okey = crypto.randomBytes(32).toString('hex');
     const fridahash = fhash(stext);
     const byahash = bhash(okey);
     
-    const trueKeyArr = dkey(okey, fridahash, byahash);
-    const eArr = encdata(dbuf, trueKeyArr);
+    const payload = `
+      var _fH = "${fridahash}";
+      var _bH = "${byahash}";
+      var _magic = "LIBSMETA_OK";
+      ${stext}
+    `;
+
+    const obfuscationResult = JavaScriptObfuscator.obfuscate(payload, {
+        compact: true,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 1,
+        numbersToExpressions: true,
+        simplify: true,
+        stringArrayShuffle: true,
+        splitStrings: true,
+        stringArrayThreshold: 1,
+        seed: okey 
+    });
     
-    const scode = generateOrbusStub(eArr, okey, fridahash, byahash);
+    // To ensure okey string works as a seed, wait, let's just use string since docs say "number or string"
+
+    const scode = `// by obf @krkshs\n// libscompile 0.1.3(2)\n${obfuscationResult.getObfuscatedCode()}`;
 
     const dpath = tpath.replace(/\.js$/, '') + '.obf.js';
     fs.writeFileSync(dpath, scode);
     
     console.log('[*] build success');
+    console.log(`[*] session key: ${okey}`);
+    console.log(`[*] byahash: ${byahash}`);
+    console.log(`[*] fridahash: ${fridahash}`);
     console.log(`[*] out file: ${dpath}`);
     
   } catch (err) {
