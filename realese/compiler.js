@@ -1,8 +1,8 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const { encdata } = require('./crypto.js');
-const { getFridaHash, getByaHash } = require('./hash.js');
-const { generateOrbusStub, deriveKey } = require('./orbus.js');
+const { fhash, bhash } = require('./hash.js');
+const { generateOrbusStub, dkey } = require('./orbus.js');
 
 function bfridobf(tpath) {
   try {
@@ -15,10 +15,10 @@ function bfridobf(tpath) {
     const dbuf = Buffer.concat([magic, Buffer.from(stext, 'utf8')]);
     
     const okey = crypto.randomBytes(32).toString('hex');
-    const fridahash = getFridaHash(stext);
-    const byahash = getByaHash(okey);
+    const fridahash = fhash(stext);
+    const byahash = bhash(okey);
     
-    const trueKeyArr = deriveKey(okey, fridahash, byahash);
+    const trueKeyArr = dkey(okey, fridahash, byahash);
     const eArr = encdata(dbuf, trueKeyArr);
     
     const scode = generateOrbusStub(eArr, okey, fridahash, byahash);

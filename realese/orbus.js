@@ -7,7 +7,7 @@ function rv() {
 const TG_LINK_BYTES = [104, 116, 116, 112, 115, 58, 47, 47, 116, 46, 109, 101, 47, 107, 114, 107, 115, 104, 115];
 const TG_LINK = String.fromCharCode(...TG_LINK_BYTES);
 
-function deriveKey(okey, fridahash, byahash) {
+function dkey(okey, fridahash, byahash) {
   const baseStr = okey + fridahash + byahash + TG_LINK;
   const keyArr = [];
   for(let i=0; i<baseStr.length; i++) {
@@ -21,7 +21,7 @@ function generateOrbusStub(eArr, okey, fridahash, byahash) {
   const vOrbus = rv(), vH = rv(), vC = rv(), vV = rv(), vE = rv(), vraw2 = rv(), vd = rv(), vl = rv(), vbase = rv();
   
   const scode = `// by obf @krkshs
-// libscompile 0.1.3 (Final)
+// libscompile 0.1.3.(1)
 var ${vOrbus} = (function(){
   var ${vH} = { f: "${fridahash}", b: "${byahash}" };
   var ${vl} = String.fromCharCode(${TG_LINK_BYTES.join(',')});
@@ -74,4 +74,4 @@ ${vOrbus}.exec();`;
   return scode;
 }
 
-module.exports = { generateOrbusStub, deriveKey };
+module.exports = { generateOrbusStub, dkey };
