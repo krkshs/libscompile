@@ -2,7 +2,8 @@ function gstream(khex, olen) {
   const sbox = Array.from({ length: 256 }, (_, i) => i);
   let mx = 0;
   for (let i = 0; i < 256; i++) {
-    mx = (mx + sbox[i] + khex.charCodeAt(i % khex.length)) % 256;
+    const kByte = typeof khex === 'string' ? khex.charCodeAt(i % khex.length) : khex[i % khex.length];
+    mx = (mx + sbox[i] + kByte) % 256;
     [sbox[i], sbox[mx]] = [sbox[mx], sbox[i]];
   }
   
@@ -19,12 +20,11 @@ function gstream(khex, olen) {
 
 function encdata(rbuf, kstr) {
   const cbytes = gstream(kstr, rbuf.length);
-  let hdump = '';
+  const out = [];
   for (let i = 0; i < rbuf.length; i++) {
-    const xrd = rbuf[i] ^ cbytes[i];
-    hdump += xrd.toString(16).padStart(2, '0');
+    out.push(rbuf[i] ^ cbytes[i]);
   }
-  return hdump;
+  return out;
 }
 
 module.exports = { gstream, encdata };
