@@ -1,7 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const JavaScriptObfuscator = require('javascript-obfuscator');
 const { fhash, bhash } = require('./hash.js');
+const { obfast } = require('./obfuscator.js');
 
 function bfridobf(tpath) {
   try {
@@ -22,21 +22,9 @@ function bfridobf(tpath) {
       ${stext}
     `;
 
-    const obfuscationResult = JavaScriptObfuscator.obfuscate(payload, {
-        compact: true,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArrayShuffle: true,
-        splitStrings: true,
-        stringArrayThreshold: 1,
-        seed: okey 
-    });
-    
-    // To ensure okey string works as a seed, wait, let's just use string since docs say "number or string"
+    const obfres = obfast(payload, okey);
 
-    const scode = `// by obf @krkshs\n// libscompile 0.1.3(2)\n${obfuscationResult.getObfuscatedCode()}`;
+    const scode = `//by obf @krkshs\n//libscompile 0.1.3(3)\n${obfres}`;
 
     const dpath = tpath.replace(/\.js$/, '') + '.obf.js';
     fs.writeFileSync(dpath, scode);
