@@ -12,21 +12,21 @@ const globals = new Set([
 function obfast(code, seed) {
     const ast = acorn.parse(code, { ecmaVersion: 'latest', sourceType: 'script' });
 
-    let nameMap = new Map();
-    let counter = 0;
+    let nmap = new Map();
+    let cnt = 0;
 
-    let seedInt = 0;
+    let sint = 0;
     for (let i = 0; i < seed.length; i++) {
-        seedInt = (seedInt + seed.charCodeAt(i)) % 100000;
+        sint = (sint + seed.charCodeAt(i)) % 100000;
     }
 
     function rndmhex() {
-        seedInt = (seedInt * 9301 + 49297) % 233280;
-        let val = Math.floor((seedInt / 233280) * 16777215);
+        sint = (sint * 9301 + 49297) % 233280;
+        let val = Math.floor((sint / 233280) * 16777215);
         return '_0x' + val.toString(16).padStart(6, '0');
     }
 
-    let strings = [];
+    let strs = [];
     
     function transform(node, parent, parentKey) {
         if (!node || typeof node !== 'object') return;
@@ -49,10 +49,10 @@ function obfast(code, seed) {
 
         if (node.type === 'Identifier') {
             if (!globals.has(node.name)) {
-                if (!nameMap.has(node.name)) {
-                    nameMap.set(node.name, rndmhex() + (counter++));
+                if (!nmap.has(node.name)) {
+                    nmap.set(node.name, rndmhex() + (cnt++));
                 }
-                node.name = nameMap.get(node.name);
+                node.name = nmap.get(node.name);
             }
         }
 
@@ -62,17 +62,17 @@ function obfast(code, seed) {
                  if (node.value === 'LIBSMETA_OK') return;
 
                  let hex = Buffer.from(node.value).toString('hex');
-                 let index = strings.indexOf(hex);
-                 if (index === -1) {
-                     strings.push(hex);
-                     index = strings.length - 1;
+                 let idx = strs.indexOf(hex);
+                 if (idx === -1) {
+                     strs.push(hex);
+                     idx = strs.length - 1;
                  }
                  
                  if (parent && parentKey !== undefined && parentKey !== null) {
                      parent[parentKey] = {
                          type: 'CallExpression',
                          callee: { type: 'Identifier', name: '_0xdec' },
-                         arguments: [{ type: 'Literal', value: index }]
+                         arguments: [{ type: 'Literal', value: idx }]
                      };
                  }
                  return;
@@ -96,10 +96,10 @@ function obfast(code, seed) {
 
     transform(ast, null, null);
 
-    let stringArrayNode = acorn.parse(`
-        const _0xstrs = ${JSON.stringify(strings)};
-        function _0xdec(index) {
-            let hex = _0xstrs[index];
+    let strnode = acorn.parse(`
+        const _0xstrs = ${JSON.stringify(strs)};
+        function _0xdec(idx) {
+            let hex = _0xstrs[idx];
             let str = '';
             for (let i = 0; i < hex.length; i += 2) {
                 str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
@@ -108,7 +108,7 @@ function obfast(code, seed) {
         }
     `, { ecmaVersion: 'latest' });
 
-    ast.body = [...stringArrayNode.body, ...ast.body];
+    ast.body = [...strnode.body, ...ast.body];
 
     const out = generate(ast, { indent: '  ', lineEnd: '\n' });
     return out;
