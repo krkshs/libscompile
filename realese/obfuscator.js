@@ -3,9 +3,10 @@ const { generate } = require('astring');
 
 const globals = new Set([
   'console', 'Process', 'Memory', 'Interceptor', 'Module', 'NativeFunction', 'NativeCallback', 
-  'ptr', 'require', 'module', 'exports', 'Buffer', 'Array', 'String', 'Object', 'Function', 
+  'ptr', 'NULL', 'require', 'module', 'exports', 'Buffer', 'Array', 'String', 'Object', 'Function', 
   'Math', 'JSON', 'undefined', 'null', 'NaN', 'Error', 'Uint8Array', 'Int32Array', 
-  'Int16Array', 'Uint16Array', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'
+  'Int16Array', 'Uint16Array', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
+  'Java', 'ObjC', 'send', 'recv', 'rpc', 'Number', 'Boolean', 'Date', 'RegExp', 'Map', 'Set', 'Promise', 'Symbol'
 ]);
 
 function obfast(code, seed) {
@@ -19,45 +20,11 @@ function obfast(code, seed) {
         seedInt = (seedInt + seed.charCodeAt(i)) % 100000;
     }
 
-    function randomHex() {
+    function rndmhex() {
         seedInt = (seedInt * 9301 + 49297) % 233280;
         let val = Math.floor((seedInt / 233280) * 16777215);
         return '_0x' + val.toString(16).padStart(6, '0');
     }
-
-    function collectIdentifiers(node) {
-        if (!node || typeof node !== 'object') return;
-        
-        if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier') {
-            if (!globals.has(node.id.name) && !nameMap.has(node.id.name)) {
-                nameMap.set(node.id.name, randomHex() + (counter++));
-            }
-        }
-        if (node.type === 'FunctionDeclaration' && node.id && node.id.type === 'Identifier') {
-            if (!globals.has(node.id.name) && !nameMap.has(node.id.name)) {
-                nameMap.set(node.id.name, randomHex() + (counter++));
-            }
-        }
-        if ((node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') && node.params) {
-            for (let p of node.params) {
-                if (p.type === 'Identifier' && !globals.has(p.name) && !nameMap.has(p.name)) {
-                    nameMap.set(p.name, randomHex() + (counter++));
-                }
-            }
-        }
-
-        for (let key in node) {
-            if (key !== 'type' && key !== 'start' && key !== 'end') {
-                if (Array.isArray(node[key])) {
-                    node[key].forEach(n => collectIdentifiers(n));
-                } else {
-                    collectIdentifiers(node[key]);
-                }
-            }
-        }
-    }
-
-    collectIdentifiers(ast);
 
     let strings = [];
     
@@ -81,33 +48,43 @@ function obfast(code, seed) {
         }
 
         if (node.type === 'Identifier') {
-            if (nameMap.has(node.name)) {
+            if (!globals.has(node.name)) {
+                if (!nameMap.has(node.name)) {
+                    nameMap.set(node.name, rndmhex() + (counter++));
+                }
                 node.name = nameMap.get(node.name);
             }
         }
 
-        if (node.type === 'Literal' && typeof node.value === 'string') {
-             if (node.value === 'use strict') return;
-             if (node.value === 'LIBSMETA_OK') return; // Do not touch magic
+        if (node.type === 'Literal') {
+             if (typeof node.value === 'string') {
+                 if (node.value === 'use strict') return;
+                 if (node.value === 'LIBSMETA_OK') return;
 
-             let hex = Buffer.from(node.value).toString('hex');
-             let index = strings.indexOf(hex);
-             if (index === -1) {
-                 strings.push(hex);
-                 index = strings.length - 1;
-             }
-             
-             if (parent && parentKey) {
-                 parent[parentKey] = {
-                     type: 'CallExpression',
-                     callee: { type: 'Identifier', name: '_0xdec' },
-                     arguments: [{ type: 'Literal', value: index }]
-                 };
+                 let hex = Buffer.from(node.value).toString('hex');
+                 let index = strings.indexOf(hex);
+                 if (index === -1) {
+                     strings.push(hex);
+                     index = strings.length - 1;
+                 }
+                 
+                 if (parent && parentKey !== undefined && parentKey !== null) {
+                     parent[parentKey] = {
+                         type: 'CallExpression',
+                         callee: { type: 'Identifier', name: '_0xdec' },
+                         arguments: [{ type: 'Literal', value: index }]
+                     };
+                 }
+                 return;
+             } else if (typeof node.value === 'number') {
+                 if (Number.isInteger(node.value)) {
+                     node.raw = (node.value < 0 ? '-0x' : '0x') + Math.abs(node.value).toString(16);
+                 }
              }
         }
 
         for (let key in node) {
-            if (key !== 'type' && key !== 'start' && key !== 'end') {
+            if (key !== 'type' && key !== 'start' && key !== 'end' && key !== 'raw') {
                 if (Array.isArray(node[key])) {
                     node[key].forEach((n, i) => transform(n, node[key], i));
                 } else {
